@@ -1,0 +1,88 @@
+name: tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  aarch64-gcc:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: update and upgrade env
+      run: sudo apt-get update && sudo apt-get upgrade
+
+    - name: Install essentials
+      run: sudo apt-get install qemu-user qemu-user-static gcc-aarch64-linux-gnu g++-aarch64-linux-gnu binutils-aarch64-linux-gnu binutils-aarch64-linux-gnu-dbg build-essential
+
+    - name: create test output directory
+      run: mkdir bin
+
+    - name: compile tests for portable code
+      run: make compile CXX=aarch64-linux-gnu-g++ LINK=static TYPE=debug VERSION=portable
+
+    - name: run tests for portable code
+      run: make run_test
+
+    - name: compile tests for ARM neon AES instructions
+      run: make compile CXX=aarch64-linux-gnu-g++ LINK=static TYPE=debug VERSION=neon
+
+    - name: run tests for ARM neon AES instructions
+      run: make run_test
+
+  clang:
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-2019, macos-latest]
+    
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: create test output directory
+      run: mkdir bin
+
+    - name: compile tests for portable code
+      run: make compile CXX=clang++ TYPE=debug VERSION=portable
+
+    - name: run tests for portable code
+      run: make run_test
+
+    - name: compile tests for x86-64 AES-NI
+      run: make compile CXX=clang++ TYPE=debug VERSION=aesni
+
+    - name: run tests for arm x86-64 AES-NI
+      run: make run_test
+
+  gcc:
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-2019, macos-latest]
+    
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: create test output directory
+      run: mkdir bin
+
+    - name: compile tests for portable code
+      run: make compile CXX=g++ TYPE=debug VERSION=portable
+
+    - name: run tests for portable code
+      run: make run_test
+
+    - name: compile tests for arm x86-64 AES-NI
+      run: make compile CXX=g++ TYPE=debug VERSION=aesni
+
+    - name: run tests for arm x86-64 AES-NI
+      run: make run_test
