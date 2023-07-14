@@ -59,7 +59,6 @@ default:
 	@echo "VERSION : portable, aesni, neon"
 	@echo "LINK    : dynamic, static"
 	@echo ""
-	@echo "Makefile recipes"
 
 test:
 	$(CXX) $(CXX_STANDARD) $(LINKER) tests.cpp -o tests.out $(DFLAGS) $(CXX_FLAGS)
