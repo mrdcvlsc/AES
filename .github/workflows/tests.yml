@@ -23,17 +23,11 @@ jobs:
     - name: create test output directory
       run: mkdir bin
 
-    - name: compile tests for portable code
-      run: make compile CXX=aarch64-linux-gnu-g++ LINK=static TYPE=debug VERSION=portable
+    - name: Test - portable C++ code
+      run: make test CXX=aarch64-linux-gnu-g++ TYPE=debug VERSION=portable
 
-    - name: run tests for portable code
-      run: make run_test
-
-    - name: compile tests for ARM neon AES instructions
-      run: make compile CXX=aarch64-linux-gnu-g++ LINK=static TYPE=debug VERSION=neon
-
-    - name: run tests for ARM neon AES instructions
-      run: make run_test
+    - name: Test - aarch64/armv8 - ARM-NEON-AES
+      run: make test CXX=aarch64-linux-gnu-g++ TYPE=debug VERSION=neon
 
   clang:
 
@@ -49,17 +43,11 @@ jobs:
     - name: create test output directory
       run: mkdir bin
 
-    - name: compile tests for portable code
-      run: make compile CXX=clang++ TYPE=debug VERSION=portable
+    - name: Test - portable C++ code
+      run: make test CXX=clang++ TYPE=debug VERSION=portable
 
-    - name: run tests for portable code
-      run: make run_test
-
-    - name: compile tests for x86-64 AES-NI
-      run: make compile CXX=clang++ TYPE=debug VERSION=aesni
-
-    - name: run tests for arm x86-64 AES-NI
-      run: make run_test
+    - name: Test - x86-64 - AES-NI
+      run: make test CXX=clang++ TYPE=debug VERSION=aesni
 
   gcc:
 
@@ -75,14 +63,8 @@ jobs:
     - name: create test output directory
       run: mkdir bin
 
-    - name: compile tests for portable code
-      run: make compile CXX=g++ TYPE=debug VERSION=portable
+    - name: Test - portable C++ code
+      run: make test CXX=g++ TYPE=debug VERSION=portable
 
-    - name: run tests for portable code
-      run: make run_test
-
-    - name: compile tests for arm x86-64 AES-NI
-      run: make compile CXX=g++ TYPE=debug VERSION=aesni
-
-    - name: run tests for arm x86-64 AES-NI
-      run: make run_test
+    - name: Test - x86-64 - AES-NI
+      run: make test CXX=g++ TYPE=debug VERSION=aesni
