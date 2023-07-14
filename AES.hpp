@@ -1,8 +1,7 @@
 #ifndef MRDCVLSC_AES_IMPLEMENTATION
 #define MRDCVLSC_AES_IMPLEMENTATION
 
-#include <immintrin.h>
-#include <xmmintrin.h>
+#include <iostream>
 
 #if defined(__x86_64) || defined(__x86_64__) || defined(__amd64) || defined(__amd64__)
   #include <immintrin.h>
@@ -42,8 +41,6 @@
 #include <cstring>
 #include <exception>
 #include <iostream>
-
-// #define HARDWARE_ACCELERATION_INTEL_AESNI // testdef
 
 namespace Cipher {
   template <size_t key_bits = 128>
@@ -230,8 +227,8 @@ namespace Cipher {
       KEY_256_ASSIST_1(&temp1, &temp2);
       Key_Schedule[14] = temp1;
     }
-#elif defined(HARDWARE_ACCELERATION_ARM_NEON_AES)
-
+// #elif defined(HARDWARE_ACCELERATION_ARM_NEON_AES)
+    // space for arm neon variables in case needed in the future.
 #else
     static constexpr unsigned char sbox[256] = {
       0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76, 0xca, 0x82, 0xc9,
@@ -568,6 +565,10 @@ namespace Cipher {
     static constexpr const char AES_TECHNOLOGY[] = "Plain C++ AES";
 #endif
 
+    /**
+     * @param key A `unsigned char *` array that contains the AES key.
+     * This key should either be **16, 24, 32** bytes, or `128`, `192`, `256` bits.
+    */
     Aes(unsigned char key[key_bits]) : round_keys() {
       if (!(key_bits == 128 || key_bits == 192 || key_bits == 256)) {
         throw std::invalid_argument("Provided an invalid key size for AES");
@@ -582,12 +583,39 @@ namespace Cipher {
         AES_256_Key_Expansion(key, round_keys);
       }
 #elif defined(HARDWARE_ACCELERATION_ARM_NEON_AES)
-      if constexpr (key_bits == 128) {
-        AES_128_Key_Expansion(key, round_keys);
-      } else if constexpr (key_bits == 192) {
-        AES_192_Key_Expansion(key, round_keys);
-      } else if constexpr (key_bits == 256) {
-        AES_256_Key_Expansion(key, round_keys);
+      // key expansion
+      unsigned char temp[4];
+      unsigned char rcon[4];
+
+      size_t i = 0;
+
+      while (i < Nk * 4) {
+        round_keys[i] = key[i];
+        round_keys[i + 1] = key[i + 1];
+        i += 2;
+      }
+
+      while (i < round_keys_size) {
+        temp[0] = round_keys[i - 4];
+        temp[1] = round_keys[i - 4 + 1];
+        temp[2] = round_keys[i - 4 + 2];
+        temp[3] = round_keys[i - 4 + 3];
+
+        if (i / 4 % Nk == 0) {
+          rot_dword(temp);
+          sub_dword(temp);
+          rcon_n(rcon, i / (Nk * 4));
+          xor_dword(temp, rcon, temp);
+        } else if (Nk > 6 && i / 4 % Nk == 4) {
+          sub_dword(temp);
+        }
+
+        round_keys[i + 0] = round_keys[i - 4 * Nk] ^ temp[0];
+        round_keys[i + 1] = round_keys[i + 1 - 4 * Nk] ^ temp[1];
+        round_keys[i + 2] = round_keys[i + 2 - 4 * Nk] ^ temp[2];
+        round_keys[i + 3] = round_keys[i + 3 - 4 * Nk] ^ temp[3];
+
+        i += 4;
       }
 #else
       // key expansion
@@ -628,11 +656,7 @@ namespace Cipher {
     }
 
     ~Aes() {
-#if defined(HARDWARE_ACCELERATION_INTEL_AESNI) || defined(HARDWARE_ACCELERATION_ARM_NEON_AES)
-
-#else
       std::memset(round_keys, 0x00, round_keys_size);
-#endif
     }
 
     void state_transpose(unsigned char *state) {
@@ -643,13 +667,17 @@ namespace Cipher {
       }
     }
 
-    // #define HARDWARE_ACCELERATION_INTEL_AESNI
-
-    void encrypt_block(unsigned char *plain) {
+    
+    /// @brief Performs AES encryption to a 16 byte block of memory.
+    ///
+    /// @note This method will overwrite the input block of memory.
+    ///
+    /// @param block 16 byte block of memory.
+    void encrypt_block(unsigned char *block) {
 #ifdef HARDWARE_ACCELERATION_INTEL_AESNI
       // load the current block & current round key into the registers
       __m128i *xmm_round_keys = (__m128i *) round_keys;
-      __m128i state = _mm_loadu_si128((__m128i *) &plain[0]);
+      __m128i state = _mm_loadu_si128((__m128i *) &block[0]);
 
       // original key
       state = _mm_xor_si128(state, xmm_round_keys[0]);
@@ -665,50 +693,56 @@ namespace Cipher {
       state = _mm_aesenclast_si128(state, xmm_round_keys[Nr]);
 
       // store from register to array
-      _mm_storeu_si128((__m128i *) (plain), state);
+      _mm_storeu_si128((__m128i *) (block), state);
 #elif defined(HARDWARE_ACCELERATION_ARM_NEON_AES)
-      uint8x16_t state = vld1q_u8(plain);
+      uint8x16_t *neon_round_keys = (uint8x16_t *) round_keys;
+      uint8x16_t state = vld1q_u8(block);
 
       // Initial round
-      state = vaesmcq_u8(vaeseq_u8(state, RoundedKeys[0]));
+      state = vaesmcq_u8(vaeseq_u8(state, neon_round_keys[0]));
 
       // 8 main rounds
       for (size_t i = 1; i < Nr - 1; i += 2) {
-        state = vaesmcq_u8(vaeseq_u8(state, RoundedKeys[i]));
-        state = vaesmcq_u8(vaeseq_u8(state, RoundedKeys[i + 1]));
+        state = vaesmcq_u8(vaeseq_u8(state, neon_round_keys[i]));
+        state = vaesmcq_u8(vaeseq_u8(state, neon_round_keys[i + 1]));
       }
 
       // last 2 final round
-      state = vaeseq_u8(state, RoundedKeys[Nr - 1]);
-      state = veorq_u8(state, RoundedKeys[Nr]);
+      state = vaeseq_u8(state, neon_round_keys[Nr - 1]);
+      state = veorq_u8(state, neon_round_keys[Nr]);
 
-      // store the result to cipher
-      vst1q_u8(cipher, state);
+      // store the result to block
+      vst1q_u8(block, state);
 #else
-      state_transpose(plain);
+      state_transpose(block);
 
-      add_round_key(plain, &round_keys[0]);
+      add_round_key(block, &round_keys[0]);
 
       for (size_t round = 1; round <= Nr - 1; ++round) {
-        sub_bytes(plain);
-        shift_rows(plain);
-        mix_columns(plain);
-        add_round_key(plain, &round_keys[round * Nb * 4]);
+        sub_bytes(block);
+        shift_rows(block);
+        mix_columns(block);
+        add_round_key(block, &round_keys[round * Nb * 4]);
       }
 
-      sub_bytes(plain);
-      shift_rows(plain);
-      add_round_key(plain, &round_keys[Nb * Nr * 4]);
+      sub_bytes(block);
+      shift_rows(block);
+      add_round_key(block, &round_keys[Nb * Nr * 4]);
 
-      state_transpose(plain);
+      state_transpose(block);
 #endif
     }
 
-    void decrypt_block(unsigned char *cipher) {
+    /// @brief Performs AES decryption to a 16 byte block of memory.
+    ///
+    /// @note This method will overwrite the input block of memory.
+    ///
+    /// @param block 16 byte block of memory.
+    void decrypt_block(unsigned char *block) {
 #ifdef HARDWARE_ACCELERATION_INTEL_AESNI
       // load the current block & current round key into the registers
       __m128i *xmm_round_keys = (__m128i *) round_keys;
-      __m128i state = _mm_loadu_si128((__m128i *) &cipher[0]);
+      __m128i state = _mm_loadu_si128((__m128i *) &block[0]);
 
       // first round
       state = _mm_xor_si128(state, xmm_round_keys[Nr]);
@@ -724,42 +758,43 @@ namespace Cipher {
       state = _mm_aesdeclast_si128(state, xmm_round_keys[0]);
 
       // store from register to array
-      _mm_storeu_si128((__m128i *) cipher, state);
-#elif defined(USE_ARM_AES)
-      uint8x16_t state = vld1q_u8(cipher);
+      _mm_storeu_si128((__m128i *) block, state);
+#elif defined(HARDWARE_ACCELERATION_ARM_NEON_AES)
+      uint8x16_t *neon_round_keys = (uint8x16_t *) round_keys;
+      uint8x16_t state = vld1q_u8(block);
 
       // Initial round
-      state = vaesimcq_u8(vaesdq_u8(state, xmm_round_keys[Nr]));
+      state = vaesimcq_u8(vaesdq_u8(state, neon_round_keys[Nr]));
 
       // 8 main rounds
       for (size_t i = Nr - 1; i > 1; i -= 2) {
-        state = vaesimcq_u8(vaesdq_u8(state, xmm_round_keys[i]));
-        state = vaesimcq_u8(vaesdq_u8(state, xmm_round_keys[i - 1]));
+        state = vaesimcq_u8(vaesdq_u8(state, vaesimcq_u8(neon_round_keys[i])));
+        state = vaesimcq_u8(vaesdq_u8(state, vaesimcq_u8(neon_round_keys[i - 1])));
       }
 
       // final 2 rounds
-      state = vaesdq_u8(state, xmm_round_keys[1]);
-      state = veorq_u8(state, xmm_round_keys[0]);
+      state = vaesdq_u8(state, vaesimcq_u8(neon_round_keys[1]));
+      state = veorq_u8(state, neon_round_keys[0]);
 
       // store the result to recover
-      vst1q_u8(recover, state);
+      vst1q_u8(block, state);
 #else
-      state_transpose(cipher);
+      state_transpose(block);
 
-      add_round_key(cipher, &round_keys[Nb * Nr * 4]);
+      add_round_key(block, &round_keys[Nb * Nr * 4]);
 
       for (size_t round = Nr - 1; round > 0; --round) {
-        inverse_sub_bytes(cipher);
-        inverse_shift_rows(cipher);
-        add_round_key(cipher, &round_keys[round * Nb * 4]);
-        inverse_mix_columns(cipher);
+        inverse_sub_bytes(block);
+        inverse_shift_rows(block);
+        add_round_key(block, &round_keys[round * Nb * 4]);
+        inverse_mix_columns(block);
       }
 
-      inverse_sub_bytes(cipher);
-      inverse_shift_rows(cipher);
-      add_round_key(cipher, &round_keys[0]);
+      inverse_sub_bytes(block);
+      inverse_shift_rows(block);
+      add_round_key(block, &round_keys[0]);
 
-      state_transpose(cipher);
+      state_transpose(block);
 #endif
     }
   };

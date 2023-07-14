@@ -62,7 +62,7 @@ default:
 	@echo "Makefile recipes"
 
 test:
-	$(CXX) $(CXX_STANDARD) tests.cpp -o tests.out $(DFLAGS) $(CXX_FLAGS)
+	$(CXX) $(CXX_STANDARD) $(LINKER) tests.cpp -o tests.out $(DFLAGS) $(CXX_FLAGS)
 	./tests.out
 
 clean:

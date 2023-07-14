@@ -93,7 +93,7 @@ int main() {
 
   std::cout << "BlockCipher, AES128: \n";
   {
-    unsigned char plain[BLOCK_BYTES_LENGTH] = {
+    unsigned char data[BLOCK_BYTES_LENGTH] = {
       0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff,
     };
 
@@ -110,16 +110,16 @@ int main() {
     };
 
     Cipher::Aes<128> aes(key);
-    aes.encrypt_block(plain);
-    t.byte_eq(plain, cipherTarget, BLOCK_BYTES_LENGTH, "TEST(BlockCipher, AES128) : cipher");
+    aes.encrypt_block(data);
+    t.byte_eq(data, cipherTarget, BLOCK_BYTES_LENGTH, "TEST(BlockCipher, AES128) : cipher");
 
-    aes.decrypt_block(plain);
-    t.byte_eq(plain, recover, BLOCK_BYTES_LENGTH, "TEST(BlockCipher, AES128)");
+    aes.decrypt_block(data);
+    t.byte_eq(data, recover, BLOCK_BYTES_LENGTH, "TEST(BlockCipher, AES128)");
   }
 
   std::cout << "BlockCipher, AES192: \n";
   {
-    unsigned char plain[BLOCK_BYTES_LENGTH] = {
+    unsigned char data[BLOCK_BYTES_LENGTH] = {
       0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff,
     };
 
@@ -137,16 +137,16 @@ int main() {
     };
 
     Cipher::Aes<192> aes(key);
-    aes.encrypt_block(plain);
-    t.byte_eq(plain, cipherTarget, BLOCK_BYTES_LENGTH, "TEST(BlockCipher, AES192) : cipher");
+    aes.encrypt_block(data);
+    t.byte_eq(data, cipherTarget, BLOCK_BYTES_LENGTH, "TEST(BlockCipher, AES192) : cipher");
 
-    aes.decrypt_block(plain);
-    t.byte_eq(plain, recover, BLOCK_BYTES_LENGTH, "TEST(BlockCipher, AES192)");
+    aes.decrypt_block(data);
+    t.byte_eq(data, recover, BLOCK_BYTES_LENGTH, "TEST(BlockCipher, AES192)");
   }
 
   std::cout << "BlockCipher, AES256: \n";
   {
-    unsigned char plain[BLOCK_BYTES_LENGTH] = {
+    unsigned char data[BLOCK_BYTES_LENGTH] = {
       0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff,
     };
 
@@ -164,11 +164,11 @@ int main() {
     };
 
     Cipher::Aes<256> aes(key);
-    aes.encrypt_block(plain);
-    t.byte_eq(plain, cipherTarget, BLOCK_BYTES_LENGTH, "TEST(BlockCipher, AES256) : cipher");
+    aes.encrypt_block(data);
+    t.byte_eq(data, cipherTarget, BLOCK_BYTES_LENGTH, "TEST(BlockCipher, AES256) : cipher");
 
-    aes.decrypt_block(plain);
-    t.byte_eq(plain, recover, BLOCK_BYTES_LENGTH, "TEST(BlockCipher, AES256)");
+    aes.decrypt_block(data);
+    t.byte_eq(data, recover, BLOCK_BYTES_LENGTH, "TEST(BlockCipher, AES256)");
   }
 
   std::cout << "\n\nAES TECHNOLOGY : " << Cipher::Aes<>::AES_TECHNOLOGY << "\n";
