@@ -32,10 +32,10 @@ COMPILATION_MSG="compiling portable version"
 DFLAGS=
 else ifeq ($(VERSION), aesni)
 COMPILATION_MSG="compiling AES-NI version"
-DFLAGS=-DUSE_AESNI -maes
+DFLAGS=-D_USE_INTEL_AESNI -maes
 else ifeq ($(VERSION), neon)
 COMPILATION_MSG="compiling AES aarch64 neon version"
-DFLAGS=-DUSE_ARM_AES -march=armv8-a+crypto
+DFLAGS=-D_USE_ARM_NEON_AES -march=armv8-a+crypto
 endif
 
 ########################## type ##########################
@@ -53,6 +53,7 @@ endif
 default:
 	@echo "Makefile variables and possible values"
 	@echo "The the first element are always the default value"
+	@echo "Recipes : test"
 	@echo "CXX     : g++, clang++"
 	@echo "TYPE    : release, debug"
 	@echo "VERSION : portable, aesni, neon"
@@ -61,8 +62,11 @@ default:
 	@echo "Makefile recipes"
 
 test:
-	@clang++ -std=c++17 tests.cpp -o tests.out -fsanitize=address
-	@./tests.out
+	$(CXX) $(CXX_STANDARD) tests.cpp -o tests.out $(DFLAGS) $(CXX_FLAGS)
+	./tests.out
+
+clean:
+	@rm tests.out
 
 style:
 	@clang-format -i -style=file *.cpp *.hpp

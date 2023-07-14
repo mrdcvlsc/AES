@@ -1,6 +1,6 @@
 ---
 BasedOnStyle: Microsoft
-# IndentWidth: 2
+IndentWidth: 2
 
 Language: Cpp
 
@@ -24,6 +24,7 @@ BraceWrapping:
 #    AfterCaseLabel: false
 
 # INDENTATIONS
+ContinuationIndentWidth: 2
 AlignAfterOpenBracket: BlockIndent
 NamespaceIndentation: All
 IndentCaseLabels: true
