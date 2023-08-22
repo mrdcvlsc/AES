@@ -65,7 +65,25 @@ test:
 	./tests.out
 
 clean:
-	@rm tests.out
+	@rm tests.out microbench.out
 
 style:
 	@clang-format -i -style=file *.cpp *.hpp
+
+microbenchmark:
+	$(CXX) $(CXX_STANDARD) $(LINKER) microbench.cpp -o microbench1.out -O3
+	$(CXX) $(CXX_STANDARD) $(LINKER) microbench.cpp -o microbench2.out -O3 -D_USE_INTEL_AESNI -maes
+	@echo "Running micro-benchmarks"
+	@echo ""
+	@echo "# **micro-benchmark**" > micro-benchmark.md
+	@echo "" >> micro-benchmark.md
+	@echo "Pure C++ Implementation" >> micro-benchmark.md
+	@echo "| AES Operation | key bits | Duration | Megabytes |" >> micro-benchmark.md
+	@echo "| --- | --- | --- | --- |" >> micro-benchmark.md
+	@./microbench1.out >> micro-benchmark.md
+	@echo "" >> micro-benchmark.md
+	@echo "AES-NI (Hardware Accelerated)" >> micro-benchmark.md
+	@echo "| AES Operation | key bits | Duration | Megabytes |" >> micro-benchmark.md
+	@echo "| --- | --- | --- | --- |" >> micro-benchmark.md
+	@./microbench2.out >> micro-benchmark.md
+	@echo "" >> micro-benchmark.md

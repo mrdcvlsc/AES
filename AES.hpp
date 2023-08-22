@@ -228,7 +228,7 @@ namespace Cipher {
       Key_Schedule[14] = temp1;
     }
 // #elif defined(HARDWARE_ACCELERATION_ARM_NEON_AES)
-    // space for arm neon variables in case needed in the future.
+// space for arm neon variables in case needed in the future.
 #else
     static constexpr unsigned char sbox[256] = {
       0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76, 0xca, 0x82, 0xc9,
@@ -513,7 +513,7 @@ namespace Cipher {
       }
     }
 
-    void add_round_key(unsigned char state[AES_BLOCK], unsigned char *key) {
+    void add_round_key(unsigned char state[AES_BLOCK], unsigned char *key) noexcept {
       for (size_t i = 0; i < 4; ++i) {
         state[i * 4] ^= key[i];
         state[i * 4 + 1] ^= key[i + 4];
@@ -522,14 +522,14 @@ namespace Cipher {
       }
     }
 
-    void sub_dword(unsigned char *dword) {
+    void sub_dword(unsigned char *dword) noexcept {
       dword[0] = sbox[dword[0]];
       dword[1] = sbox[dword[1]];
       dword[2] = sbox[dword[2]];
       dword[3] = sbox[dword[3]];
     }
 
-    void rot_dword(unsigned char *dword) {
+    void rot_dword(unsigned char *dword) noexcept {
       unsigned char temp = dword[0];
       dword[0] = dword[1];
       dword[1] = dword[2];
@@ -537,14 +537,14 @@ namespace Cipher {
       dword[3] = temp;
     }
 
-    void xor_dword(unsigned char *dest, unsigned char *a, unsigned char *b) {
+    void xor_dword(unsigned char *dest, unsigned char *a, unsigned char *b) noexcept {
       dest[0] = a[0] ^ b[0];
       dest[1] = a[1] ^ b[1];
       dest[2] = a[2] ^ b[2];
       dest[3] = a[3] ^ b[3];
     }
 
-    void rcon_n(unsigned char *dword, size_t n) {
+    void rcon_n(unsigned char *dword, size_t n) noexcept {
       unsigned char cbyte = 0x01;
       for (size_t i = 0; i < n - 1; ++i) {
         cbyte = (cbyte << 1) ^ (((cbyte >> 7) & 1) * 0x1b);
@@ -554,6 +554,14 @@ namespace Cipher {
       dword[1] = dword[2] = dword[3] = 0x00;
     }
 #endif
+
+    void state_transpose(unsigned char *state) noexcept {
+      for (size_t i = 0; i < 4; i++) {
+        for (size_t j = 0; j < i; j++) {
+          std::swap(state[i * 4 + j], state[j * 4 + i]);
+        }
+      }
+    }
 
     public:
 
@@ -568,11 +576,10 @@ namespace Cipher {
     /**
      * @param key A `unsigned char *` array that contains the AES key.
      * This key should either be **16, 24, 32** bytes, or `128`, `192`, `256` bits.
-    */
+     */
     Aes(unsigned char key[key_bits]) : round_keys() {
-      if (!(key_bits == 128 || key_bits == 192 || key_bits == 256)) {
-        throw std::invalid_argument("Provided an invalid key size for AES");
-      }
+      constexpr bool invalid_aes_key_bit_size = key_bits == 128 || key_bits == 192 || key_bits == 256;
+      static_assert(invalid_aes_key_bit_size, "The valid values are only: 128, 192 & 256");
 
 #ifdef HARDWARE_ACCELERATION_INTEL_AESNI
       if constexpr (key_bits == 128) {
@@ -659,15 +666,6 @@ namespace Cipher {
       std::memset(round_keys, 0x00, round_keys_size);
     }
 
-    void state_transpose(unsigned char *state) {
-      for (size_t i = 0; i < 4; i++) {
-        for (size_t j = 0; j < i; j++) {
-          std::swap(state[i * 4 + j], state[j * 4 + i]);
-        }
-      }
-    }
-
-    
     /// @brief Performs AES encryption to a 16 byte block of memory.
     ///
     /// @note This method will overwrite the input block of memory.

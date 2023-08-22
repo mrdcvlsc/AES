@@ -1,0 +1,50 @@
+name: benchmark
+
+on:
+  workflow_run:
+    workflows: [tests]
+    types: [completed]
+
+jobs:
+  run-benchmark:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Configure Email
+        run:  git config --local user.email benchmark@actions.yaml
+
+      - name: Configure Name
+        run:  git config --local user.name benchmark.yml
+
+      - name: Git Status
+        run: git status
+
+      - name: Run Benchmark
+        run: make microbenchmark CXX=clang++ CC=clang
+
+      - name: Stash Benchmark Results
+        run: git add micro-benchmark.md
+
+      - name: Save Changes
+        run: git commit -m "run::$(date)"
+
+      - name: Push Changes To Benchmark Branch
+        run: git push
+
+  run-benchmark-failed:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    steps:
+      - name: rquirements failed
+        run: echo the tests failed
+      - name: force fail benchmark workflow
+        run: exit 1
