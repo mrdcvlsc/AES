@@ -410,7 +410,7 @@ namespace Cipher {
       {11, 13, 9, 14},
     };
 
-    void sub_bytes(unsigned char state[AES_BLOCK]) {
+    void sub_bytes(unsigned char state[AES_BLOCK]) noexcept {
       for (size_t i = 0; i < AES_BLOCK; i += 4) {
         state[i] = sbox[state[i]];
         state[i + 1] = sbox[state[i + 1]];
@@ -419,7 +419,7 @@ namespace Cipher {
       }
     }
 
-    void inverse_sub_bytes(unsigned char state[AES_BLOCK]) {
+    void inverse_sub_bytes(unsigned char state[AES_BLOCK]) noexcept {
       for (size_t i = 0; i < AES_BLOCK; i += 4) {
         state[i] = inverse_sbox[state[i]];
         state[i + 1] = inverse_sbox[state[i + 1]];
@@ -428,7 +428,7 @@ namespace Cipher {
       }
     }
 
-    void shift_rows(unsigned char state[AES_BLOCK]) {
+    void shift_rows(unsigned char state[AES_BLOCK]) noexcept {
       unsigned char temp = state[4];
 
       state[4] = state[5];
@@ -450,7 +450,7 @@ namespace Cipher {
       state[13] = temp;
     }
 
-    void inverse_shift_rows(unsigned char state[AES_BLOCK]) {
+    void inverse_shift_rows(unsigned char state[AES_BLOCK]) noexcept {
       unsigned char temp = state[4];
 
       state[4] = state[7];
@@ -472,7 +472,7 @@ namespace Cipher {
       state[15] = temp;
     }
 
-    void mix_columns(unsigned char state[AES_BLOCK]) {
+    void mix_columns(unsigned char state[AES_BLOCK]) noexcept {
       unsigned char gf_product[AES_BLOCK] = {};
 
       // TODO: analyse in the future if this loop can speed up by branchless programming.
@@ -493,7 +493,7 @@ namespace Cipher {
       }
     }
 
-    void inverse_mix_columns(unsigned char state[AES_BLOCK]) {
+    void inverse_mix_columns(unsigned char state[AES_BLOCK]) noexcept {
       unsigned char gf_product[AES_BLOCK] = {};
 
       for (size_t i = 0; i < 4; ++i) {

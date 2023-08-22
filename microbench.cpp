@@ -44,7 +44,7 @@ int main() {
     auto enc_end = std::chrono::high_resolution_clock::now();
     auto enc_dur = std::chrono::duration_cast<std::chrono::milliseconds>(enc_end - enc_start);
 
-    std::cout << "| Encryption | " << KEY_BIT_SIZE << " | " << enc_dur.count() << "ms | " << (MB / 1024) / 1024 << "\n";
+    std::cout << "| Encryption | " << KEY_BIT_SIZE << " | " << enc_dur.count() << "ms | " << (MB / 1024) / 1024 << "|\n";
     
     auto dec_start = std::chrono::high_resolution_clock::now();
     for (size_t i = 0; i < MB; i += 16) {
@@ -53,7 +53,7 @@ int main() {
     auto dec_end = std::chrono::high_resolution_clock::now();
     auto dec_dur = std::chrono::duration_cast<std::chrono::milliseconds>(dec_end - dec_start);
 
-    std::cout << "| Decryption | " << KEY_BIT_SIZE << " | " << dec_dur.count() << "ms | " << (MB / 1024) / 1024 << "\n";
+    std::cout << "| Decryption | " << KEY_BIT_SIZE << " | " << dec_dur.count() << "ms | " << (MB / 1024) / 1024 << "|\n";
 
     int result = std::memcmp(data, save, MB);
     // std::cout << "\n\nresult = " << result << "\n\n";
