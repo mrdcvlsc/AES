@@ -4,7 +4,7 @@ on:
   workflow_run:
     workflows: [tests]
     types: [completed]
-
+  
 jobs:
   run-benchmark:
     runs-on: ubuntu-latest
@@ -34,11 +34,26 @@ jobs:
       - name: Stash Benchmark Results
         run: git add micro-benchmark.md
 
+      - name: Commit Changes
+        run: git commit -m "..."
+
+      - name: Remove Other Changes
+        run: git checkout .
+
+      - name: Clean Artifacts
+        run: git clean -f -d
+
+      - name: Checkout Benchmark Branch
+        run: git checkout benchmarks
+
+      - name: Checkout Benchmark Markdown Results
+        run: git checkout main micro-benchmark.md
+
       - name: Save Changes
         run: git commit -m "run::$(date)"
 
       - name: Push Changes To Benchmark Branch
-        run: git push
+        run: git push --force
 
   run-benchmark-failed:
     runs-on: ubuntu-latest
