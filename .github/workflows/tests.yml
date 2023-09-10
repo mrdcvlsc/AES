@@ -6,33 +6,40 @@ on:
   pull_request:
     branches: [ main ]
 
+concurrency:
+  group: ${{ github.workflow }} @ ${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   cmake-build:
-    name: ${{ matrix.platform.name }}
+    name: ${{ matrix.platform.name }} ${{ matrix.aes.name }}
     runs-on: ${{ matrix.platform.os }}
 
     strategy:
       fail-fast: false
       matrix:
         aes:
-        - { name: Pure C++ Implementation, flag: portable }
-        - { name: Intel x86_64 AES NI,     flag: aesni    }
-        - { name: ARMv8 aarch64 NEON,      flag: neon     }
+        - { name: C++ Implementation,  flag: portable}
+        - { name: Intel x86_64 AES NI, flag: aesni}
+        # - { name: ARMv8 aarch64 NEON,  flag: neon}
         platform:
-        # - { name: Linux Clang,    os: ubuntu-latest,  outpath: './', flags: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ }
-        - { name: Windows VS2019, os: windows-2019, outpath: 'Release\', fext: .exe, }
-        - { name: Windows VS2022, os: windows-2022, outpath: 'Release\', fext: .exe, }
-        - { name: MacOS   XCode,    os: macos-latest, outpath: './' }
-        # - { name: Linux GCC,      os: ubuntu-latest,  outpath: './' }
+        # - { name: Linux Clang,    os: ubuntu-latest, outpath: './', flags: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++}
+        - { name: Windows VS2019, os: windows-2019,  outpath: 'Release\', fext: .exe, }
+        - { name: Windows VS2022, os: windows-2022,  outpath: 'Release\', fext: .exe, }
+        # - { name: Clang VS2022,   os: windows-2022,  outpath: 'Release\', fext: .exe, flags: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++}
+        - { name: MacOS   XCode,  os: macos-latest,  outpath: './' }
+        # - { name: Linux GCC,      os: ubuntu-latest, outpath: './' }
 
     steps:
     - uses: actions/checkout@v3
 
-    - name: System Info
-      run: cmake cmake -S . -B . -D AES_IMPL=${{matrix.aes.flag}}
+    - run: cmake --version
+
+    - name: Configure
+      run: cmake -S . -B . -D AES_IMPL=${{matrix.aes.flag}}
 
     - name: Build
-      run: cmake --build tests --config Release
+      run: cmake --build . --config Release
 
     - name: Run Tests
       run: "${{matrix.platform.outpath}}tests${{matrix.platform.fext}}"

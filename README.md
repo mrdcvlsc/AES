@@ -12,50 +12,29 @@ This repository contains a **single header file C++ library** that provides AES 
 
 - Requires C++17 so you need to compile it with the compilation flag `-std=c++17`.
 
-## **Performance Compilation D-Flags:**
-
-+ **Portable**:
+## **Portable**:
 
   By simply including the main header file (`AES.hpp`), the code will be compiled using portable C++. Make sure to compile with the optimization flag `-O3`.
   
   _Please note that the portable code is slower than the two alternatives mentioned below_.
 
-+ **AES-NI:**
+## **AES-NI:**
 
   To achieve a significant speed-up performance, add the following flag when compiling for `x86-64` architecture.
   
   _e.g. mid-range PCs & Laptops_.
 
-  ```-D_USE_INTEL_AESNI -maes -O3```
+  ```-D USE_INTEL_AESNI -maes -O3```
 
-+ **ARM neon:**
+## **ARM neon:**
 
   To gain a speed-up performance, add the following flag when compiling for `aarch64 armv8` architecture.
   
   _e.g. modern android devices_.
 
-  ```-D_USE_ARM_NEON_AES -march=armv8-a+crypto -O3```
+  ```-D USE_ARM_NEON_AES -march=armv8-a+crypto -O3```
 
-## **Sample program:**
-
-- **compile with [pure c/c++ code]**
-
-  ```
-  g++ -o sample.exe sample.cpp -O3
-  ```
-
-- **comple with [AES-NI]**
-
-  ```
-  g++ -o sample.exe sample.cpp -D_USE_INTEL_AESNI -maes -O3
-  ```
-
-- **comple with [Arm-NEON-AES]**
-
-  ```
-  g++ -o sample.exe sample.cpp -D_USE_ARM_NEON_AES -march=armv8-a+crypto -O3
-  ```
-
+## Sample Program
 
 ```c++
 /*    sample.cpp    */
@@ -86,3 +65,65 @@ int main()
 0x69, 0xc4, 0xe0, 0xd8, 0x6a, 0x7b, 0x04, 0x30,
 0xd8, 0xcd, 0xb7, 0x80, 0x70, 0xb4, 0xc5, 0x5a,
 ```
+
+## Compiling with CMake
+
+To build with cmake while choosing what AES implementation to use, you can add the following cmake code below into your **CMakeLists.txt** file right after the `project` function call, then run **cmake-gui** or use the command `todo : terminal command here`.
+
+```cmake
+cmake_minimum_required(VERSION 3.16)
+
+project(YourProjectName VERSION 1.0.0)
+
+# ...
+
+# add this block before `add_executable`
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+set(AES_IMPL "aesni" CACHE STRING "Choose an AES Implementation")
+set_property(CACHE AES_IMPL PROPERTY STRINGS auto portable aesni neon)
+# add this block before `add_executable`
+
+# ...
+
+add_executable(main Source.cpp)
+
+# ...
+
+# add this block to after `add_executable(...)`
+if("${AES_IMPL}" STREQUAL "aesni")
+    target_compile_definitions(main PUBLIC USE_INTEL_AESNI)
+    if(MSVC)
+        target_compile_options(main PRIVATE /arch:SSE2)
+    else()
+        target_compile_options(main PRIVATE -maes)
+    endif()
+elseif("${AES_IMPL}" STREQUAL "neon")
+    target_compile_definitions(main PUBLIC USE_ARM_NEON_AES)
+    target_compile_options(main PRIVATE -march=armv8-a+crypto)
+elseif("${AES_IMPL}" STREQUAL "portable")
+    target_compile_definitions(main PUBLIC USE_CXX_AES)
+endif()
+# add this block to after `add_executable(...)`
+```
+
+## Compiling in the Command Line
+
+1. **compile with [pure c/c++ code]**
+
+  ```
+  g++ -o sample.exe sample.cpp -O3
+  ```
+
+2. **comple with [AES-NI]**
+
+  ```
+  g++ -o sample.exe sample.cpp -D USE_INTEL_AESNI -maes -O3
+  ```
+
+3. **comple with [Arm-NEON-AES]**
+
+  ```
+  g++ -o sample.exe sample.cpp -D USE_ARM_NEON_AES -march=armv8-a+crypto -O3
+  ```

@@ -28,13 +28,13 @@ VERSION:=
 
 ifeq ($(VERSION), portable)
 COMPILATION_MSG="compiling portable version"
-DFLAGS=
+DFLAGS:=-D USE_CXX_AES
 else ifeq ($(VERSION), aesni)
 COMPILATION_MSG="compiling AES-NI version"
-DFLAGS=-D_USE_INTEL_AESNI -maes
+DFLAGS:=-D USE_INTEL_AESNI -maes
 else ifeq ($(VERSION), neon)
 COMPILATION_MSG="compiling AES aarch64 neon version"
-DFLAGS=-D_USE_ARM_NEON_AES -march=armv8-a+crypto
+DFLAGS:=-D USE_ARM_NEON_AES -march=armv8-a+crypto
 endif
 
 ########################## type ##########################
@@ -74,7 +74,7 @@ style:
 
 microbenchmark:
 	$(CXX) $(CXX_STANDARD) $(LINKER) microbench.cpp -o microbench1.out -O3
-	$(CXX) $(CXX_STANDARD) $(LINKER) microbench.cpp -o microbench2.out -O3 -D_USE_INTEL_AESNI -maes
+	$(CXX) $(CXX_STANDARD) $(LINKER) microbench.cpp -o microbench2.out -O3 -D USE_INTEL_AESNI -maes
 	@echo "Running micro-benchmarks"
 	@echo ""
 	@echo "# **micro-benchmark**" > micro-benchmark.md
