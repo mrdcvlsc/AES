@@ -1,31 +1,30 @@
-OS := $(shell uname)
-
-CXX=g++
-CXX_STANDARD=-std=c++17
+OS:=$(shell uname)
+CXX:=g++
+CXX_STANDARD:=-std=c++17
 
 ########################## link ##########################
 
-LINK=dynamic
+LINK:=dynamic
 
 ifeq ($(LINK), dynamic)
-LINKER=
+LINKER:=
 else ifeq ($(LINK), static)
-LINKER=-static
+LINKER:=-static
 endif
 
 ########################## sanitizer ##########################
 
 ifeq ($(CXX), clang++)
-ADDRESS_SANITIZER=-fsanitize=address
-THREADS_SANITIZER=-fsanitize=thread
+ADDRESS_SANITIZER:=-fsanitize=address
+THREADS_SANITIZER:=-fsanitize=thread
 else
-ADDRESS_SANITIZER=
-THREADS_SANITIZER=
+ADDRESS_SANITIZER:=
+THREADS_SANITIZER:=
 endif
 
 ########################## version ##########################
 
-VERSION=portable
+VERSION:=
 
 ifeq ($(VERSION), portable)
 COMPILATION_MSG="compiling portable version"
@@ -40,7 +39,7 @@ endif
 
 ########################## type ##########################
 
-TYPE=release
+TYPE:=release
 
 ifeq ($(TYPE), release)
 CXX_FLAGS=-O3 -Wall -Wextra
@@ -66,6 +65,9 @@ test:
 
 clean:
 	@rm tests.out microbench.out
+
+clean-cmake:
+	rm -r tests Makefile CMakeFiles cmake_install.cmake CMakeCache.txt
 
 style:
 	@clang-format -i -style=file *.cpp *.hpp
