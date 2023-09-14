@@ -34,7 +34,7 @@ COMPILATION_MSG="compiling AES-NI version"
 DFLAGS:=-D USE_INTEL_AESNI -maes
 else ifeq ($(VERSION), neon)
 COMPILATION_MSG="compiling AES aarch64 neon version"
-DFLAGS:=-D USE_ARM_NEON_AES -march=armv8-a+crypto
+DFLAGS:=-D USE_NEON_AES -march=armv8-a+crypto
 endif
 
 ########################## type ##########################

@@ -2,9 +2,14 @@
 
 ![tests](https://github.com/mrdcvlsc/AES/actions/workflows/tests.yml/badge.svg)
 
-This repository contains a **single header file C++ library** that provides AES encryption and decryption functionality. The library _**supports**_ both a **pure C++** implementation and optimized implementations that leverage **hardware acceleration technologies**, such as `AES-NI` for `x86-64` architectures and `ARM NEON` for `ARM` architectures.
+This repository contains a **single header file C++** that provides AES encryption and decryption function that _**supports**_ both a **pure C++** implementation and optimized implementations that leverage **hardware acceleration technologies** such as; `AES-NI` for `x86-64` architectures and `ARM NEON` for `ARM` architectures.
 
-**Please note** that this library **focuses solely** on the **encryption** and **decryption** of **AES blocks** and _**does not include padding functions or encryption modes**_. You may need to incorporate additional functions or libraries to handle padding and implement specific encryption modes, such as CBC or CTR.
+> [!IMPORTANT]  
+> This library **focuses solely** on the **encryption** and **decryption** of **AES blocks** and _**does not include padding functions or block cipher encryption modes**_.
+> 
+> You need to code additional functions or incorporate libraries to handle padding and encryption modes such as CBC or CTR.
+> 
+> Here is a [CLI program for File Encryption](https://github.com/mrdcvlsc/bethela/blob/main/main.cpp) that uses some of the modules that I wrote ([AES](https://github.com/mrdcvlsc/AES), [BytePadding](https://github.com/mrdcvlsc/BytePadding), [BlockCipherModes](https://github.com/mrdcvlsc/BlockCipherModes)) which can be used as an example.
 
 -----------
 
@@ -38,7 +43,7 @@ To gain a speed-up performance, add the following flag when compiling for **`aar
   
  _e.g. modern android devices_.
 
-**Additional Compiler Flag: `-D USE_ARM_NEON_AES -march=armv8-a+crypto`**
+**Additional Compiler Flag: `-D USE_NEON_AES -march=armv8-a+crypto`**
 
 **CMake: `AES_IMPL=neon`**
 
@@ -110,7 +115,7 @@ if("${AES_IMPL}" STREQUAL "aesni")
         target_compile_options(main PRIVATE -maes)
     endif()
 elseif("${AES_IMPL}" STREQUAL "neon")
-    target_compile_definitions(main PUBLIC USE_ARM_NEON_AES)
+    target_compile_definitions(main PUBLIC USE_NEON_AES)
     target_compile_options(main PRIVATE -march=armv8-a+crypto)
 elseif("${AES_IMPL}" STREQUAL "portable")
     target_compile_definitions(main PUBLIC USE_CXX_AES)
@@ -146,5 +151,5 @@ The value of `<CHOSEN_AES>` could be `aesni`, `neon` or `portable`, .
 3. **comple with [Arm-NEON-AES]**
 
   ```
-  g++ -o sample.exe sample.cpp -D USE_ARM_NEON_AES -march=armv8-a+crypto -O3
+  g++ -o sample.exe sample.cpp -D USE_NEON_AES -march=armv8-a+crypto -O3
   ```
