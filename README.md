@@ -2,7 +2,7 @@
 
 ![tests](https://github.com/mrdcvlsc/AES/actions/workflows/tests.yml/badge.svg)
 
-This repository contains a **single header file C++** that provides AES encryption and decryption function that _**supports**_ both a **pure C++** implementation and optimized implementations that leverage **hardware acceleration technologies** such as; `AES-NI` for `x86-64` architectures and `ARM NEON` for `ARM` architectures.
+This repository contains a **single header file C++** that provides AES encryption and decryption function that _**supports**_ both a **pure C++** implementation and optimized implementations that leverage **hardware acceleration technologies** such as; **AES-NI** for `x86-64`, `amd64` architectures and **ARM NEON** for arm `aarch64`or 64-bit arm architectures.
 
 > [!IMPORTANT]  
 > This library **focuses solely** on the **encryption** and **decryption** of **AES blocks** and _**does not include padding functions or block cipher encryption modes**_.
@@ -15,7 +15,7 @@ This repository contains a **single header file C++** that provides AES encrypti
 
 ## Requirement
 
-Requires C++17 so you need to compile it with the compilation flag `-std=c++17`.
+Requires **C++17** so you need to compile it with the compilation flag `-std=c++17`.
 
 ## Enable Portable C++ AES Implementation
 
