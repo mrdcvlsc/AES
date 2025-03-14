@@ -3,12 +3,12 @@
 Pure C++ Implementation
 | AES Operation | key bits | Duration | Megabytes |
 | --- | --- | --- | --- |
-| Encryption | 256 | 645ms | 16|
-| Decryption | 256 | 763ms | 16|
+| Encryption | 256 | 413ms | 16|
+| Decryption | 256 | 518ms | 16|
 
 AES-NI (Hardware Accelerated)
 | AES Operation | key bits | Duration | Megabytes |
 | --- | --- | --- | --- |
-| Encryption | 256 | 5ms | 16|
-| Decryption | 256 | 6ms | 16|
+| Encryption | 256 | 2ms | 16|
+| Decryption | 256 | 2ms | 16|
 
