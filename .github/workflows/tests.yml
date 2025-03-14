@@ -19,16 +19,15 @@ jobs:
       fail-fast: false
       matrix:
         aes:
-        - { name: C++ Implementation,  flag: portable}
-        - { name: Intel x86_64 AES NI, flag: aesni}
-        # - { name: ARMv8 aarch64 NEON,  flag: neon}
+        - { name: C++ Implementation,      flag: portable}
+        - { name: AES-NI - x86_64 - amd64, flag: aesni}
         platform:
-        # - { name: Linux Clang,    os: ubuntu-latest, outpath: './', flags: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++}
-        - { name: Windows VS2019, os: windows-2019,  outpath: 'Release\', fext: .exe, }
-        - { name: Windows VS2022, os: windows-2022,  outpath: 'Release\', fext: .exe, }
-        # - { name: Clang VS2022,   os: windows-2022,  outpath: 'Release\', fext: .exe, flags: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++}
-        - { name: MacOS   XCode,  os: macos-latest,  outpath: './' }
-        # - { name: Linux GCC,      os: ubuntu-latest, outpath: './' }
+        - { name: Windows VS2019, os: windows-2019, extension_name: .exe, }
+        - { name: Windows VS2022, os: windows-2022, extension_name: .exe, }
+        - { name: MacOS   XCode,  os: macos-latest }
+        config:
+        - { build_type: Debug }
+        - { build_type: Release }
 
     steps:
     - uses: actions/checkout@v3
@@ -36,13 +35,18 @@ jobs:
     - run: cmake --version
 
     - name: Configure
-      run: cmake -S . -B . -D AES_IMPL=${{matrix.aes.flag}}
+      run: cmake -S . -B . -D AES_IMPL=${{matrix.aes.flag}} -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }}
 
     - name: Build
-      run: cmake --build . --config Release
+      run: cmake --build . --config ${{ matrix.config.build_type }}
 
-    - name: Run Tests
-      run: "${{matrix.platform.outpath}}tests${{matrix.platform.fext}}"
+    - name: Run Tests (Linux)
+      if: runner.os == 'Linux'
+      run: ./tests
+
+    - name: Run Tests (Windows)
+      if: runner.os == 'Windows'
+      run: ${{ matrix.config.build_type }}\tests${{matrix.platform.extension_name}}
 
   aarch64-gcc:
 
@@ -72,7 +76,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-2019, macos-latest]
+        os: [ubuntu-latest, ubuntu-22.04, windows-2019, macos-latest]
     
     steps:
     - uses: actions/checkout@v3
@@ -92,7 +96,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-2019, macos-latest]
+        os: [ubuntu-latest, ubuntu-22.04, windows-2019, macos-latest]
     
     steps:
     - uses: actions/checkout@v3
