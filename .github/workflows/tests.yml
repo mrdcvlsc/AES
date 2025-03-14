@@ -75,6 +75,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, ubuntu-22.04, windows-2019, macos-latest]
     
@@ -95,6 +96,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, ubuntu-22.04, windows-2019, macos-latest]
     
