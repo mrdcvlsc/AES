@@ -3,7 +3,7 @@
 Pure C++ Implementation
 | AES Operation | key bits | Duration | Megabytes |
 | --- | --- | --- | --- |
-| Encryption | 256 | 413ms | 16|
+| Encryption | 256 | 415ms | 16|
 | Decryption | 256 | 518ms | 16|
 
 AES-NI (Hardware Accelerated)
