@@ -13,41 +13,45 @@ This repository contains a **single header file C++** that provides AES encrypti
 
 -----------
 
-## Requirement
+## What You’ll Need
 
-Requires **C++17** so you need to compile it with the compilation flag `-std=c++17`.
+Requires a C++ compiler that supports **C++17**, you need to compile it with the compilation flag `-std=c++17` or set the C++ version to 17 when using CMake.
 
-## Enable Portable C++ AES Implementation
+## How to Use the Library
 
-By simply including the main header file (`AES.hpp`), the code will be compiled using portable C++. Make sure to compile with the optimization flag `-O3`.
+First download the headerfile and add `#include "AES.hpp"` or `#include "path/to/the/file/AES.hpp"` to your code.
 
-_Please note that the portable code is slower than the two alternatives mentioned below_.
+Then you can choose how the library runs AES based on your device. Here are your **options**:
 
-**Additional Compiler Flag: `-D USE_CXX_AES`**
+### 1. **Portable C++ Version**
+- **What it is:** This is a version written entirely in C++ that should work on *any* computer.
+- **How to use it:**  Add `-D USE_CXX_AES` and `-O3` when you compile.
+- **Speed:** It’s slower than the other options but ensures the best compatibility.
 
-**CMake: `AES_IMPL=portable`**
+### 2. **AES-NI for Intel/AMD Processors**
+- **What it is:** A faster version that uses special instructions built into Intel or AMD processors (found in most PCs and laptops).
+- **How to use it:** Add `-D USE_INTEL_AESNI -maes -O3` when you compile.
+- **Speed:** Much faster than the portable C++ version if your computer supports it.
 
-## Enable AES-NI Hardware Acceleration
+### 3. **NEON for ARM Processors**
+- **What it is:** A faster version for devices with 64 bit ARM processors, like smartphones or tablets.
+- **How to use it:** Add `-D USE_NEON_AES -march=armv8-a+crypto -O3` when you compile.
+- **Speed:** Boosts performance on ARM devices, much faster that portable C++ version.
 
-To achieve a significant speed-up performance, add the following flag when compiling for **`x86-64`** architecture.
-  
-_e.g. mid-range PCs & Laptops_.
+### **Automatic Detection and Manual Choice**
 
-**Additional Compiler Flag: `-D USE_INTEL_AESNI -maes`**
+By default, the library will try to figure out the best option for your device after including the header file:
+- For Intel/AMD processors, it picks AES-NI if supported.
+- For ARM processors, it picks NEON if supported.
+- If neither works, it uses the portable C++ version.
 
-**CMake: `AES_IMPL=aesni`**
+Although sometimes, the automatic detection might not work correctly. If that happens, you can force the library to use a specific version by adding the flags listed [above](#how-to-use-the-library) to your compile command. Just make sure your device and compiler support the option you picked.
 
-## Enable ARM neon Hardware Acceleration
+-----------
 
-To gain a speed-up performance, add the following flag when compiling for **`aarch64`**, **`armv8`** architecture.
-  
- _e.g. modern android devices_.
+# Sample Code to Get Started
 
-**Additional Compiler Flag: `-D USE_NEON_AES -march=armv8-a+crypto`**
-
-**CMake: `AES_IMPL=neon`**
-
-# Sample Program
+**sample.cpp**
 
 ```c++
 /*    sample.cpp    */
@@ -67,89 +71,87 @@ int main()
     };
 
     Cipher::Aes<128> aes(key);
-    aes.encrypt_block(data); // data is now encrypted.
-    aes.decrypt_block(data); // data is now decrypted.
+    aes.encrypt_block(data); // data is now encrypted in-place.
+    aes.decrypt_block(data); // data is now decrypted in-place.
 }
 ```
 
-**Encrypted Value:**
+**Resulting Encrypted Value:**
 
 ```shell
 0x69, 0xc4, 0xe0, 0xd8, 0x6a, 0x7b, 0x04, 0x30,
 0xd8, 0xcd, 0xb7, 0x80, 0x70, 0xb4, 0xc5, 0x5a,
 ```
+-----
 
-# Compiling with CMake
+## How to Compile Your Code
 
-To build with cmake while choosing what AES implementation to use, you can add the following cmake code below into your **CMakeLists.txt** file.
+The example below will use the [program `sample.cpp` given above](#sample-code-to-get-started)
 
-**cmake:**
+### Option 1: Using the Command Line
+Run one of these commands in your terminal or command prompt. Replace `sample.cpp` with your file’s name.
 
-```cmake
-cmake_minimum_required(VERSION 3.16)
+- **Portable C++ Version:**
+  ```
+  g++ -o sample.exe sample.cpp -D USE_CXX_AES -O3 -std=c++17
+  ```
 
-project(YourProjectName VERSION 1.0.0)
+- **AES-NI for Intel/AMD:**
+  ```
+  g++ -o sample.exe sample.cpp -D USE_INTEL_AESNI -maes -O3 -std=c++17
+  ```
 
-# ...
+- **NEON for ARM:**
+  ```
+  g++ -o sample.exe sample.cpp -D USE_NEON_AES -march=armv8-a+crypto -O3 -std=c++17
+  ```
 
-# add this block before `add_executable`
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
+### Option 2: Using CMake
 
-set(AES_IMPL "aesni" CACHE STRING "Choose an AES Implementation")
-set_property(CACHE AES_IMPL PROPERTY STRINGS auto portable aesni neon)
-# add this block before `add_executable`
-
-# ...
-
-add_executable(main Source.cpp)
-
-# ...
-
-# add this block to after `add_executable(...)`
-if("${AES_IMPL}" STREQUAL "aesni")
-    target_compile_definitions(main PUBLIC USE_INTEL_AESNI)
-    if(MSVC)
+1. On your `CMakeLists.txt` add this block:
+    ```cmake
+    cmake_minimum_required(VERSION 3.16)
+    
+    project(YourProjectName VERSION 1.0.0)
+    
+    # ...
+    
+    # add this block BEFORE `add_executable`
+    set(CMAKE_CXX_STANDARD 17)
+    set(CMAKE_CXX_STANDARD_REQUIRED True)
+    
+    set(AES_IMPL "aesni" CACHE STRING "Choose an AES Implementation")
+    set_property(CACHE AES_IMPL PROPERTY STRINGS auto portable aesni neon)
+    # add this block BEFORE `add_executable`
+    
+    # ...
+    
+    add_executable(main Source.cpp)
+    
+    # ...
+    
+    # add this block to AFTER `add_executable(...)`
+    if("${AES_IMPL}" STREQUAL "aesni")
+      target_compile_definitions(main PUBLIC USE_INTEL_AESNI)
+      if(MSVC)
         target_compile_options(main PRIVATE /arch:SSE2)
-    else()
+      else()
         target_compile_options(main PRIVATE -maes)
+      endif()
+    elseif("${AES_IMPL}" STREQUAL "neon")
+      target_compile_definitions(main PUBLIC USE_NEON_AES)
+      target_compile_options(main PRIVATE -march=armv8-a+crypto)
+    elseif("${AES_IMPL}" STREQUAL "portable")
+      target_compile_definitions(main PUBLIC USE_CXX_AES)
     endif()
-elseif("${AES_IMPL}" STREQUAL "neon")
-    target_compile_definitions(main PUBLIC USE_NEON_AES)
-    target_compile_options(main PRIVATE -march=armv8-a+crypto)
-elseif("${AES_IMPL}" STREQUAL "portable")
-    target_compile_definitions(main PUBLIC USE_CXX_AES)
-endif()
-# add this block to after `add_executable(...)`
-```
+    # add this block to AFTER `add_executable(...)`
+    ```
 
-Then run **cmake-gui** choose which aes implementation you want to enable in the check-boxe of `AES_IMPL`.
+2. Run these commands in your terminal:
+    ```
+    cmake -S . -B . -D AES_IMPL=portable
+    cmake --build . --config Release
+    ```
+    Replace `portable` with `aesni` or `neon` depending on what you want.
 
-Or use the terminal command for bash/cmd`.
-
-```bash
-cmake -S . -B . -D AES_IMPL=<CHOSEN_AES>
-cmake --build . --config Release
-```
-
-The value of `<CHOSEN_AES>` could be `aesni`, `neon` or `portable`, .
-
-# Compiling in the Command Line
-
-1. **compile with [pure c/c++ code]**
-
-  ```
-  g++ -o sample.exe sample.cpp -D USE_CXX_AES -O3
-  ```
-
-2. **comple with [AES-NI]**
-
-  ```
-  g++ -o sample.exe sample.cpp -D USE_INTEL_AESNI -maes -O3
-  ```
-
-3. **comple with [Arm-NEON-AES]**
-
-  ```
-  g++ -o sample.exe sample.cpp -D USE_NEON_AES -march=armv8-a+crypto -O3
-  ```
+---
