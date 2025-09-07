@@ -39,9 +39,9 @@
   #endif
 #endif
 
-#if (defined(_WIN32) || defined(_WIN64) || defined(__x86_64) || defined(__x86_64__) || defined(__amd64) || defined(__amd64__)) && \
+#if (defined(__x86_64) || defined(__x86_64__) || defined(__amd64) || defined(__amd64__)) && \
   !defined(USE_CXX_AES) && !defined(USE_NEON_AES)
-  #ifdef _MSC_VER
+  #if defined(_MSC_VER)
     #include <intrin.h>
   #endif
 
