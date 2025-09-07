@@ -30,8 +30,13 @@
   #undef HARDWARE_ACCELERATION_ARM_NEON_AES
 
 #else
-  #warning AES Implementation Not Specified
-  #warning Auto Detecting AES Implementation
+  #if defined (_WIN32) && defined(_MSC_VER)
+    #pragma message ( "AES Implementation Not Specified" )
+    #pragma message ( "Auto Detecting AES Implementation" )
+  #else
+    #warning AES Implementation Not Specified
+    #warning Auto Detecting AES Implementation
+  #endif
 #endif
 
 #if (defined(_WIN32) || defined(_WIN64) || defined(__x86_64) || defined(__x86_64__) || defined(__amd64) || defined(__amd64__)) && \
