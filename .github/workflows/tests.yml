@@ -103,10 +103,20 @@ jobs:
     - name: create test output directory
       run: mkdir bin
 
-    - name: Test - portable C++ code
+    - name: Test - portable C++ code (windows)
+      if: runner.os == 'Windows'
+      run: make test CXX=clang++ TYPE=debug VERSION=portable ASAN=OFF
+
+    - name: Test - x86-64 - AES-NI (windows)
+      if: runner.os == 'Windows'
+      run: make test CXX=clang++ TYPE=debug VERSION=aesni ASAN=OFF
+
+    - name: Test - portable C++ code (linux or mac)
+      if: runner.os == 'macOS' || runner.os == 'Linux'
       run: make test CXX=clang++ TYPE=debug VERSION=portable
 
-    - name: Test - x86-64 - AES-NI
+    - name: Test - x86-64 - AES-NI (linux or mac)
+      if: runner.os == 'macOS' || runner.os == 'Linux'
       run: make test CXX=clang++ TYPE=debug VERSION=aesni
 
   gcc:

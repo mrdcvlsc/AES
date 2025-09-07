@@ -1,6 +1,7 @@
 OS:=$(shell uname)
 CXX:=g++
 CXX_STANDARD:=-std=c++17
+ASAN:=
 
 ########################## link ##########################
 
@@ -15,8 +16,13 @@ endif
 ########################## sanitizer ##########################
 
 ifeq ($(CXX), clang++)
-ADDRESS_SANITIZER:=-fsanitize=address
-THREADS_SANITIZER:=-fsanitize=thread
+	ifeq ($(ASAN), OFF)
+	ADDRESS_SANITIZER:=
+	THREADS_SANITIZER:=
+	else
+	ADDRESS_SANITIZER:=-fsanitize=address
+	THREADS_SANITIZER:=-fsanitize=thread
+	endif
 else
 ADDRESS_SANITIZER:=
 THREADS_SANITIZER:=
@@ -60,6 +66,7 @@ default:
 	@echo ""
 
 test:
+	@echo "Operating System : $(OS)"
 	$(CXX) $(CXX_STANDARD) $(LINKER) tests.cpp -o tests.out $(DFLAGS) $(CXX_FLAGS)
 	./tests.out
 
