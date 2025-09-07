@@ -19,14 +19,26 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-        - { name: Windows VS2019 - AES-NI,     aes: aesni,    os: windows-2019, extension: .exe, }
-        - { name: Windows VS2022 - AES-NI,     aes: aesni,    os: windows-2022, extension: .exe, }
-        - { name: MacOS XCode - 13 - AES-NI  , aes: aesni,    os: macos-13 }
-        - { name: MacOS XCode - 14 - AES-NEON, aes: neon,     os: macos-14 }
-        - { name: MacOS XCode - 15 - AES-NEON, aes: neon,     os: macos-15 }
-        - { name: MacOS XCode - 13 - Portable, aes: portable, os: macos-13 }
-        - { name: MacOS XCode - 14 - Portable, aes: portable, os: macos-14 }
-        - { name: MacOS XCode - 15 - Portable, aes: portable, os: macos-15 }
+        - { name: Windows VS2022 (x64) - AES-NI,   aes: aesni,    os: windows-2022,   extension: .exe, }
+        - { name: Windows VS2025 (x64) - AES-NI,   aes: aesni,    os: windows-2025,   extension: .exe, }
+        - { name: Windows VS2022 (x64) - Portable, aes: portable, os: windows-2022,   extension: .exe, }
+        - { name: Windows VS2025 (x64) - Portable, aes: portable, os: windows-2025,   extension: .exe, }
+        - { name: Windows 11 (arm64) - AES-NEON,   aes: neon,     os: windows-11-arm, extension: .exe, }
+        - { name: Windows 11 (arm64) - Portable,   aes: portable, os: windows-11-arm, extension: .exe, }
+        - { name: Ubuntu (x64) 2022 - AES-NI,      aes: aesni,    os: ubuntu-22.04 }
+        - { name: Ubuntu (x64) 2024 - AES-NI,      aes: aesni,    os: ubuntu-24.04 }
+        - { name: Ubuntu (x64) 2022 - Portable,    aes: portable, os: ubuntu-22.04 }
+        - { name: Ubuntu (x64) 2024 - Portable,    aes: portable, os: ubuntu-24.04 }
+        - { name: Ubuntu (arm64) 2022 - AES-NEON,  aes: neon,     os: ubuntu-22.04-arm }
+        - { name: Ubuntu (arm64) 2024 - AES-NEON,  aes: neon,     os: ubuntu-24.04-arm }
+        - { name: Ubuntu (arm64) 2022 - Portable,  aes: portable, os: ubuntu-22.04-arm }
+        - { name: Ubuntu (arm64) 2024 - Portable,  aes: portable, os: ubuntu-24.04-arm }
+        - { name: MacOS 13 (Intel) - AES-NI,       aes: aesni,    os: macos-13 }
+        - { name: MacOS 14 (arm64) - AES-NEON,     aes: neon,     os: macos-14 }
+        - { name: MacOS 15 (arm64) - AES-NEON,     aes: neon,     os: macos-15 }
+        - { name: MacOS 13 (arm64) - Portable,     aes: portable, os: macos-13 }
+        - { name: MacOS 14 (arm64) - Portable,     aes: portable, os: macos-14 }
+        - { name: MacOS 15 (arm64) - Portable,     aes: portable, os: macos-15 }
         config:
         - { build_type: Debug }
         - { build_type: Release }
@@ -83,7 +95,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, ubuntu-22.04, windows-2019, macos-13]
+        os: [ubuntu-24.04, ubuntu-22.04, windows-2025, windows-2022, macos-13]
     
     steps:
     - uses: actions/checkout@v4
@@ -104,7 +116,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, ubuntu-22.04, windows-2019, macos-13]
+        os: [ubuntu-24.04, ubuntu-22.04, windows-2025, windows-2022, macos-13]
     
     steps:
     - uses: actions/checkout@v4
