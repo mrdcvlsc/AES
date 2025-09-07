@@ -2,6 +2,11 @@
 #define MRDCVLSC_AES_IMPLEMENTATION
 
 #include <iostream>
+#include <limits>
+#include <climits>
+#include <cstring>
+#include <exception>
+#include <iostream>
 
 #if defined(USE_NEON_AES)
   #ifndef HARDWARE_ACCELERATION_ARM_NEON_AES
@@ -68,10 +73,6 @@
   #endif
 #endif
 
-#include <cstring>
-#include <exception>
-#include <iostream>
-
 namespace Cipher {
   template <size_t key_bits = 128>
   class Aes {
@@ -80,6 +81,7 @@ namespace Cipher {
     static constexpr size_t Nk = key_bits / 32;
     static constexpr size_t Nr = Nk + 6;
     static constexpr size_t round_keys_size = 4 * Nb * (Nr + 1);
+    static constexpr size_t key_bytes = key_bits / sizeof(char);
 
     unsigned char round_keys[round_keys_size];
 
@@ -607,7 +609,7 @@ namespace Cipher {
      * @param key A `unsigned char *` array that contains the AES key.
      * This key should either be **16, 24, 32** bytes, or `128`, `192`, `256` bits.
      */
-    Aes(unsigned char key[key_bits]) : round_keys() {
+    Aes(unsigned char key[key_bytes]) : round_keys() {
       constexpr bool invalid_aes_key_bit_size = key_bits == 128 || key_bits == 192 || key_bits == 256;
       static_assert(invalid_aes_key_bit_size, "The valid values are only: 128, 192 & 256");
 
